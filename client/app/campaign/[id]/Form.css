@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* .to-gray-800 {
+    --tw-gradient-to: #1f2937 var(--tw-gradient-to-position);
+}
+.from-gray-900 {
+    --tw-gradient-from: #111827 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.bg-gradient-to-b {
+    background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+} */
+
+*{
+    box-sizing: border-box;
+}
+
+.CampaignForm h1,.CampaignForm h3
+{
+    margin: 0;
+    /* border: 2px solid green; */
+
+}
+
+.CampaignForm-Story p
+{
+    /* border: 2px solid blue; */
+    margin: 0;
+}
+
+.CampaignForm
+{
+    /* border: 2px solid red; */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    background-color: whitesmoke;
+    color: #17494f;
+    border-radius: 10px;
+    width: 75%;
+    height: 75%;
+    padding: 0.5%;
+    position: absolute;
+    left: 12.5%;
+    top:12.5%;
+    display: flex;
+    flex-direction: row;
+}
+
+.CampaignForm-Left,.CampaignForm-Right
+{
+    /* border: 2px solid blue; */
+    width: 60%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.CampaignForm-Right
+{
+    width: 40%;
+    border-left: 2px solid black;
+}
+.CampaignForm-title,.CampaignForm-Story,.CampaignForm-Donators
+{
+    /* border: 2px solid red; */
+    width: 100%;
+    height: fit-content;
+    padding:1%;
+
+}
+
+.CampaignForm-Donators ol
+{
+    /* border: 2px solid green; */
+    margin: 0;
+    width: 100%;
+    height: 25vh;
+    overflow-y: auto;
+}
+.CampaignForm-Donators ol li
+{
+    padding: 1%;
+    color: #666666;
+    border-bottom:2px solid rgb(213, 203, 203);
+
+
+}
+.CampaignForm-Donators ol span
+{
+    float: right;
+    margin-right:2%;
+}
+
+.CampaignForm-countbox-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 50%;
+    padding: 0.5%;
+    margin-left: 0.5%;
+    border-bottom: 2px solid rgb(213, 203, 203);
+}
+
+.CampaignForm-countbox {
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 45%;
+    margin: 1% 0;
+    padding:5%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.CampaignForm-countbox:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    background-color: #17494f;
+}
+
+.CampaignForm-countbox:hover .CampaignForm-countbox-number
+{
+    color: white;
+}
+.CampaignForm-countbox:hover .CampaignForm-countbox-label
+{
+    color: whitesmoke;
+}
+
+.CampaignForm-countbox-number {
+    color: #333;
+    font-size: 2rem;
+    margin: 0;
+}
+
+.CampaignForm-countbox-label {
+    color: #777;
+    margin: 0;
+}
+
+
+
+
+.CampaignForm-FundBox {
+    height: 20%;
+    padding:1%;
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+  .CampaignForm-FundBox-Input
+  {
+    margin-top:2%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
+.CampaignForm-FundBox p
+{
+    margin: 0;
+}
+
+.CampaignForm-FundBox-Input input
+{ 
+    border: none;
+    border-radius: 5px;
+    width:65%;
+    height: 8vh;
+    padding:1%;
+    background-color:white;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05), 
+    inset 0 0 8px rgba(0, 0, 0, 0.1);}
+
+.CampaignForm-FundBox button
+{
+    background-color: #27ab9f;
+    border: 2px solid #27ab9f;
+    color: white;
+    border-radius:5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.5s background-color;
+}
+
+.CampaignForm-FundBox button:hover
+{
+    border: 2px solid #0056b3;
+    background-color: #0056b3;
+
+}
+
+.CampaignForm-Documents
+{
+    width: 100%;
+    height:30%;
+    padding:0 2%;
+    border-bottom: 2px solid rgb(213, 203, 203);
+}
+
+/* PDF Preview */
+.pdf-preview {
+    width: 100%;
+    height:70px;
+    margin: 1% 0;
+
+}
+
+.pdf-preview iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Button Styles */
+.pdf-button {
+    color: #fff;
+    background-color: #27ab9f;
+    padding: 2%; 
+    width:25%;   
+    margin-top:0.5%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pdf-button:hover {
+    background-color: #0056b3;
+}
