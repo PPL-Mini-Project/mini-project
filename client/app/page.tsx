@@ -15,25 +15,29 @@ import HeroImage from "@/public/HeroImage.png"
 import Logo from "@/public/Logo.png"
 
 // import ThirdWebStorage from "@thirdweb-dev/storage";
-import {useStorageUpload} from "@thirdweb-dev/react";
+// import {useStorageUpload} from "@thirdweb-dev/react";
 
 import { storage } from "./firebase";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 
 // Contract Address
-import { getContractProviderOrSigner } from '@/functions/getSignerOrProvider';
+import { getContractProviderOrSigner } from '@/functions/user';
+
+import { subscribeToChannel } from '@/functions/Notifications';
+import { sendNotification } from '@/functions/Notifications';
 
 export default function Page() {
 
-  const client = createThirdwebClient({
-    clientId: "544a63bd14ad456d64c742ff0ec281d3",
-  });
+  // const client = createThirdwebClient({
+  //   clientId: "544a63bd14ad456d64c742ff0ec281d3",
+  // });
 
-  console.log(client);
-  
+  // console.log(client);
+
+
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   // User Wallet Address
   const [address, setAddress] = useState("");
 
@@ -44,10 +48,10 @@ export default function Page() {
     startDate: "",
     endDate: "",
     amount: 0,
-    files:[]
+    files: []
   });
 
-  const [newFiles,setNewFiles] = useState<FileList>();
+  const [newFiles, setNewFiles] = useState<FileList>();
 
   // Ref for form
   const createCampaign = useRef();
@@ -79,7 +83,6 @@ export default function Page() {
         const acc = await window.ethereum.request({
           method: "eth_requestAccounts"
         });
-        console.log(acc);
 
         setAddress(acc[0]);
         setCampaign(await getAllCampaigns());
@@ -147,7 +150,7 @@ export default function Page() {
       data.files.push(res);
     }
     console.log(data);
-    
+
     return data;
   }
 
@@ -157,7 +160,7 @@ export default function Page() {
     const Contract = await getContractProviderOrSigner("signer");
     let data = await uploadFiles();
     try {
-      await Contract.createCampaign(newCampaign.title, newCampaign.story, new Date().toString(), newCampaign.endDate,data.files, Number(newCampaign.amount));
+      await Contract.createCampaign(newCampaign.title, newCampaign.story, new Date().toString(), newCampaign.endDate, data.files, Number(newCampaign.amount));
     }
     catch (e) {
       console.log(e);
