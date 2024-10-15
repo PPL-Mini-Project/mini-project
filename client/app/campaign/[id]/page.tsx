@@ -21,6 +21,7 @@ import { subscribeToChannel } from "@/functions/Notifications";
 import { depositFund } from "@/functions/fundTransfer";
 import { getCampaignDetails } from "@/functions/campaign";
 import { agentWallet, getAgentProviderOrSigner } from "@/functions/agent";
+import { sendNotification } from "@/functions/Notifications";
 
 
 const defaultValue: Campaign = {
@@ -70,6 +71,7 @@ const CampaignDetails = ({ params }: { params: { id: Number } }) => {
       };
 
       setCampaign(data);
+
     } catch (error) {
       console.error("Failed to fetch campaign details:", error);
       toast({
@@ -107,7 +109,7 @@ const CampaignDetails = ({ params }: { params: { id: Number } }) => {
       const tx = await Contract.donateCampaignToAgent(id, { value: donationAmount });
       await tx.wait();
 
-      // await subscribeToChannel()
+      await subscribeToChannel();
 
       const status = await Contract.isOver(id);
 
@@ -116,28 +118,20 @@ const CampaignDetails = ({ params }: { params: { id: Number } }) => {
 
       if (Number(status._hex) == 1) {
 
-        // const signer: ethers.Wallet = await agentWallet();
+        const signer: ethers.Wallet = await agentWallet();
 
-        // const agentContract = await getAgentProviderOrSigner(signer);
+        const agentContract = await getAgentProviderOrSigner(signer);
 
-        // const tx = await agentContract.setAuditors(id);
-
-        // await tx.wait();
-
-        // const auditorAddress: string[] = await agentContract.getAuditors(id);
-
-        // console.log(auditorAddress);
-
-        // await sendNotification("Confirm your Donation", campaign.title, id, auditorAddress);
-        const tx = await Contract.setAuditors(id);
+        const tx = await agentContract.setAuditors(id);
 
         await tx.wait();
 
-        const auditorAddress: string[] = await Contract.getAuditors(id);
+        const auditorAddress: string[] = await agentContract.getAuditors(id);
 
         console.log(auditorAddress);
-      }
 
+        await sendNotification("Confirm your Donation", campaign.title, id, auditorAddress);
+      }
 
       toast({
         title: "Donation Successful",

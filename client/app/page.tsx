@@ -62,6 +62,8 @@ export default function Page() {
   async function connectMask() {
     try {
       const { account, campaigns } = await connectToMetaMask();
+      console.log(account);
+      
       setAddress(account[0]);
       setCampaign(campaigns);
     } catch (error) {
