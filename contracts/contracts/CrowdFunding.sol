@@ -25,10 +25,19 @@ contract CrowdFunding {
          4 - Fund reverted
          5 - Reject
         */
-
         uint numberOfAuditors;
         address[] auditorAddress;
         uint[] auditorStatus;
+
+        //FOR APPROVAL/DECLINE
+        //0-No Action
+        //1-Approved
+        //2-Declined
+
+        uint campaignId; 
+        uint isVerified;
+        uint[] verificationStatus; //Approve/Decline given by admin
+        address[] adminAddress;
     }
 
     struct FundRaiser {
@@ -84,6 +93,11 @@ contract CrowdFunding {
             Number of Auditors = base auditor / base amount * goal * (1 + risk / 100) 
         */
         newCampaign.numberOfAuditors = (10 * _fundingGoal) / 100;
+
+        //Initial Verification
+        newCampaign.isVerified = 0;
+        //Campaign Id to find the exact Campaign
+        newCampaign.campaignId=numberOfCampaigns;
         numberOfCampaigns++;
     }
 
@@ -95,7 +109,7 @@ contract CrowdFunding {
         uint j = 0;
         for (uint i = 0; i < numberOfCampaigns; i++) {
             campaign = campaigns[i];
-            if (campaign.status == 1) {
+            if (campaign.status == 1 && campaign.isVerified==1) {
                 allCampaigns[j] = campaign;
                 ids[j++] = i;
             }
@@ -310,5 +324,88 @@ contract CrowdFunding {
             }
         }
         return (campaign, ids);
+    }
+
+    // Function to return only unverified campaigns
+    function unverifiedCampaign() public view returns (Campaign[] memory) {
+        uint unverifiedCount = 0;
+
+        for (uint i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].isVerified==0) {
+                unverifiedCount++;
+            }
+        }
+
+        Campaign[] memory unverifiedCampaigns = new Campaign[](unverifiedCount);
+        uint index = 0;
+
+        for (uint i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].isVerified==0) {
+                unverifiedCampaigns[index] = campaigns[i];
+                index++;
+            }
+        }
+
+        return unverifiedCampaigns;
+    }
+
+
+
+    function approveCampaign(uint _id,address adminAddress)public 
+    {
+        Campaign storage campaign=campaigns[_id];
+        campaign.verificationStatus.push(1);
+        campaign.adminAddress.push(adminAddress);
+
+        if(campaign.verificationStatus.length==3)
+        {
+            uint cnt=0;
+            for(uint i=0;i<campaign.verificationStatus.length;i++)
+            {
+             if(campaign.verificationStatus[i]==1)
+             {
+                 cnt++;
+             }
+            }
+            if(cnt>=2)
+            {
+                campaign.isVerified=1;
+            }
+            else 
+            {
+                campaign.isVerified=2;
+            }
+        }
+    }
+
+     function declineCampaign(uint _id,address adminAddress)public 
+    {
+        Campaign storage campaign=campaigns[_id];
+        campaign.verificationStatus.push(2);
+        campaign.adminAddress.push(adminAddress);
+
+        if(campaign.verificationStatus.length==3)
+        {
+            uint i;
+            uint cnt=0;
+            
+            for(i=0;i<campaign.verificationStatus.length;i++)
+            {
+                if(campaign.verificationStatus[i]==2)
+                {
+                   cnt++;
+                }
+            }
+
+            if(cnt>=2)
+            {
+                campaign.isVerified=2;
+            }
+            else 
+            {
+                campaign.isVerified=1;
+            }
+        }
+
     }
 }
