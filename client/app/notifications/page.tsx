@@ -56,7 +56,7 @@ const CampaignList = () => {
   async function getPendingCampaigns() {
     try {
       console.log(122);
-      const Contract = await getContractProviderOrSigner("provider");
+      const Contract = await getContractProviderOrSigner("signer");
       const campaigns = await Contract.unverifiedCampaign();
       console.log(campaigns);
       setCampaigns(campaigns);
@@ -100,7 +100,6 @@ const CampaignList = () => {
       });
     } finally {
       setLoading(false);
-      await handleApprove(BigNumber.from("0"));
     }
   }
 
@@ -113,7 +112,7 @@ const CampaignList = () => {
     console.log("Approve campaign", Number(id._hex));
     const Contract = await getContractProviderOrSigner("signer");
     if (mode === "audit") {
-      // await Contract.auditorResponce(Number(id._hex), 1);
+      await Contract.auditorResponce(Number(id._hex), 1);
       const status = await Contract.auditStatus(Number(id._hex));
       console.log(status._hex);
       const agent = await agentWallet();
