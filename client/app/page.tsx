@@ -21,8 +21,6 @@ import Image from "next/image";
 import { ethers } from "ethers";
 import { useRouter } from "next/navigation";
 import HeroImage from "@/public/HeroImage.png";
-import { storage } from "./firebase";
-import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { getContractProviderOrSigner } from "@/functions/user";
 import { subscribeToChannel } from "@/functions/Notifications";
 import { sendNotification } from "@/functions/Notifications";
@@ -30,7 +28,7 @@ import Navbar from "@/components/custom/Navbar";
 import connectToMetaMask from "@/functions/connectToMetaMask";
 import { useQueryClient } from "@tanstack/react-query";
 import { uploadFiles } from "@/functions/ipfs";
-import { useStorageUpload } from "@thirdweb-dev/react"
+import { useStorageUpload } from "@thirdweb-dev/react";
 
 export default function Page() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -51,8 +49,12 @@ export default function Page() {
   const { mutateAsync: upload } = useStorageUpload();
 
 
+  console.log(currentSlide);
+  
+
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.ceil(campaigns.length / 2));
+    console.log(12);
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(campaigns.length));
   };
 
   const prevSlide = () => {
@@ -62,9 +64,9 @@ export default function Page() {
   async function connectMask() {
     try {
       const { account, campaigns } = await connectToMetaMask();
-      console.log(account,campaigns);
+      console.log(account, campaigns);
       console.log(account);
-      
+
       setAddress(account);
       setCampaign(campaigns);
     } catch (error) {
@@ -78,28 +80,23 @@ export default function Page() {
 
   async function createNewCampaign() {
     const Contract = await getContractProviderOrSigner("signer");
-    // let data = await uploadFiles(newFiles,upload);
-    let data = [];
-    console.log(data);
-    
+    let data: string[] = []
+    if (newFiles)
+      data = await uploadFiles(newFiles, upload);
+
     try {
-      console.log(address);
-      
+
       const user = await Contract.getFundRaiserDetails(address);
-      console.log(user);
-      
+
       let auditors = 0;
-      if(user.exists === false){
-        auditors = Math.ceil((10 * (1 + (50 / 100) ) * Number(newCampaign.amount)) / 100);
+      if (user.exists === false) {
+        auditors = Math.ceil((10 * (1 + (50 / 100)) * Number(newCampaign.amount)) / 100);
       }
-      else{
-        auditors = Math.ceil((10 * (1 + (user.risk._hex / 100) ) * Number(newCampaign.amount)) / 100);
+      else {
+        auditors = Math.ceil((10 * (1 + (user.risk._hex / 100)) * Number(newCampaign.amount)) / 100);
       }
 
-      console.log(auditors);
-      
-
-      await Contract.createCampaign(
+      const tx = await Contract.createCampaign(
         newCampaign.title,
         newCampaign.story,
         new Date().toString(),
@@ -108,19 +105,33 @@ export default function Page() {
         Number(newCampaign.amount),
         Number(auditors)
       );
+
+      await tx.wait();
+
+      await subscribeToChannel();
     } catch (e) {
       console.log(e);
     }
   }
 
+  function chooseImage(documents: string[]) {
+    console.log("start");
+    
+    for (let doc of documents) {
+      if (doc.includes(".png") || doc.includes(".jpg") || doc.includes(".jpeg")){
+        console.log(doc);
+        
+        return doc;
+      }
+    }
+    console.log(1);
+    
+    return HeroImage;
+  }
+
   useEffect(() => {
     connectMask();
   }, []);
-
-  console.log(campaigns);
-  console.log(address);
-  
-  
 
   const queryClient = useQueryClient();
 
@@ -210,38 +221,42 @@ export default function Page() {
                   className="flex transition-transform duration-500 ease-in-out"
                   style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                 >
-                  {campaigns.map((campaign, i) => (
-                    <Card
-                      key={i}
-                      className="flex-shrink-0 w-full bg-gray-800 border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-green-400/20"
-                    >
-                      <img
-                        src={campaign.documents[0]}
-                        width={400}
-                        height={200}
-                        alt={campaign.title}
-                        className="w-full h-48 object-cover"
-                      />
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          {campaign.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-300 mb-4">
-                          End Date: {new Date(campaign.endDate).toLocaleDateString()}
-                        </p>
-                        <Button
-                          onClick={() => {
-                            router.push(`/campaign/${i}`);
-                          }}
-                          className="w-full mt-4 bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-md shadow-green-400/30 transition-all duration-300"
-                        >
-                          Support
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {campaigns.map((campaign, i) => {
+                    console.log(campaign);
+
+                    return (
+                      <Card
+                        key={i}
+                        className="flex-shrink-0 w-full bg-gray-800 border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-green-400/20"
+                      >
+                        <img
+                          src={campaign.documents.length > 0 ? (campaign.documents[0].includes(".png") ? campaign.documents[0] : campaign.documents[1]) : HeroImage}
+                          width={400}
+                          height={200}
+                          alt={campaign.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <CardHeader>
+                          <CardTitle className="text-white">
+                            {campaign.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-300 mb-4">
+                            End Date: {new Date(campaign.endDate).toLocaleDateString()}
+                          </p>
+                          <Button
+                            onClick={() => {
+                              router.push(`/campaign/${campaign.campaignId._hex}`);
+                            }}
+                            className="w-full mt-4 bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-md shadow-green-400/30 transition-all duration-300"
+                          >
+                            Support
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
               <Button
@@ -399,7 +414,7 @@ export default function Page() {
           <div className="grid gap-4 md:grid-cols-3">
             {[
               { title: "Total Funds Raised", value: "10,000 ETH" },
-              { title: "Lives Impacted", value:  "50,000+" },
+              { title: "Lives Impacted", value: "50,000+" },
               { title: "Successful Campaigns", value: "1,234" },
             ].map((stat, i) => (
               <Card
