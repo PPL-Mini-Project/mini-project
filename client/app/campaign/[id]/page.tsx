@@ -132,7 +132,7 @@ const CampaignDetails = ({ params }: { params: { id: Number } }) => {
         await tx.wait();
 
 
-        await sendNotification("Confirm your Donation", campaign.title, id, auditors);
+        await sendNotification("Confirm your Donation", campaign.title, auditors);
       }
 
       toast({
@@ -236,6 +236,7 @@ const CampaignDetails = ({ params }: { params: { id: Number } }) => {
                   placeholder="Enter donation amount in ETH"
                   value={donationAmount}
                   onChange={(e) => setDonationAmount(e.target.value)}
+                  style={{color:"black"}}
                 />
                 <div className="flex justify-center">
                   <Button

@@ -169,6 +169,9 @@ contract CrowdFunding {
         address payable recipient = campaign.creatorId;
         recipient.transfer(msg.value);
         campaign.status = campaign.status + 1;
+        FundRaiser storage raiser = fundRaiser[campaign.creatorId];
+        if(raiser.risk >= 5)
+            raiser.risk = raiser.risk - 5;
     }
 
     // Store Auditor Response
@@ -228,6 +231,8 @@ contract CrowdFunding {
     function updateCampaignStatus(uint id) public {
         Campaign storage campaign = campaigns[id];
         campaign.status = campaign.status + 2;
+        FundRaiser storage raiser = fundRaiser[campaign.creatorId];
+        raiser.risk = raiser.risk + 5;
     }
 
     function revertAmount(address recipient) public payable {

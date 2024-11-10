@@ -24,7 +24,7 @@ async function subscribeToChannel() {
 }
 
 // Send the notification
-async function sendNotification(title: string, body: string, id: Number,target:string[]) {
+async function sendNotification(title: string, body: string,target:string[]) {
 
     const agent = await getAgentAccount();
 
@@ -32,9 +32,6 @@ async function sendNotification(title: string, body: string, id: Number,target:s
         notification: {
             title: title,
             body: body,
-        },
-        payload: {
-            title: id.toString()
         }
     });
 
