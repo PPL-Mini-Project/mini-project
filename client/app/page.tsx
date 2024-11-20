@@ -31,6 +31,7 @@ import { uploadFiles } from "@/functions/ipfs";
 import { useStorageUpload } from "@thirdweb-dev/react";
 
 export default function Page() {
+  const [loading, setLoading] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [address, setAddress] = useState("");
   const [newCampaign, setNewCampaign] = useState({
@@ -50,7 +51,7 @@ export default function Page() {
 
 
   console.log(currentSlide);
-  
+
 
   const nextSlide = () => {
     console.log(12);
@@ -79,6 +80,7 @@ export default function Page() {
   }
 
   async function createNewCampaign() {
+    setLoading(true);
     const Contract = await getContractProviderOrSigner("signer");
     let data: string[] = []
     if (newFiles)
@@ -112,21 +114,9 @@ export default function Page() {
     } catch (e) {
       console.log(e);
     }
-  }
-
-  function chooseImage(documents: string[]) {
-    console.log("start");
-    
-    for (let doc of documents) {
-      if (doc.includes(".png") || doc.includes(".jpg") || doc.includes(".jpeg")){
-        console.log(doc);
-        
-        return doc;
-      }
+    finally {
+      setLoading(false);
     }
-    console.log(1);
-    
-    return HeroImage;
   }
 
   useEffect(() => {
@@ -134,6 +124,23 @@ export default function Page() {
   }, []);
 
   const queryClient = useQueryClient();
+
+  function chooseImage(documents) {
+    for (let doc of documents) {
+      if (doc.endsWith(".png") || doc.endsWith(".jpg") || doc.endsWith(".jpeg"))
+        return doc;
+    }
+    return "https://pixelplex.io/wp-content/uploads/2022/04/blockchain-in-crowdfunding-meta.jpg"
+  }
+
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center ">
+        <h1 className="text-7xl text-white text-center mb-5">Processing...</h1>
+        <h5 className="text-3xl text-white text-center">This might take a few seconds</h5>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-screen bg-gradient-to-b from-gray-900 to-gray-800">
@@ -198,77 +205,85 @@ export default function Page() {
             Current Campaigns
           </h2>
 
-          {address === "" ? (
-            <Button
-              className="bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300"
-              onClick={connectMask}
-            >
-              <WalletIcon className="w-4 h-4 mr-2" />
-              Connect to MetaMask
-            </Button>
-          ) : (
-            <div className="flex items-center justify-center">
+          {
+            address === "" ? (
               <Button
-                onClick={prevSlide}
-                variant="outline"
-                size="icon"
-                className="mr-4 bg-gray-800 text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900"
+                className="bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300"
+                onClick={connectMask}
               >
-                <ChevronLeftIcon className="h-4 w-4" />
+                <WalletIcon className="w-4 h-4 mr-2" />
+                Connect to MetaMask
               </Button>
-              <div className="overflow-hidden w-1/3">
-                <div
-                  className="flex transition-transform duration-500 ease-in-out"
-                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                >
-                  {campaigns.map((campaign, i) => {
-                    console.log(campaign);
-
-                    return (
-                      <Card
-                        key={i}
-                        className="flex-shrink-0 w-full bg-gray-800 border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-green-400/20"
-                      >
-                        <img
-                          src={campaign.documents.length > 0 ? (campaign.documents[0].includes(".png") ? campaign.documents[0] : campaign.documents[1]) : HeroImage}
-                          width={400}
-                          height={200}
-                          alt={campaign.title}
-                          className="w-full h-48 object-cover"
-                        />
-                        <CardHeader>
-                          <CardTitle className="text-white">
-                            {campaign.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-300 mb-4">
-                            End Date: {new Date(campaign.endDate).toLocaleDateString()}
-                          </p>
-                          <Button
-                            onClick={() => {
-                              router.push(`/campaign/${campaign.campaignId._hex}`);
-                            }}
-                            className="w-full mt-4 bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-md shadow-green-400/30 transition-all duration-300"
-                          >
-                            Support
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+            )
+              : campaigns.length == 0 ?
+                <div className="h-60 flex flex-column items-center justify-center ">
+                  <h1 className="text-3xl text-white text-center"> No Campaigns Available</h1>
                 </div>
-              </div>
-              <Button
-                onClick={nextSlide}
-                variant="outline"
-                size="icon"
-                className="ml-4 bg-gray-800 text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+                :
+                <div className="flex items-center justify-center">
+                  <Button
+                    onClick={prevSlide}
+                    variant="outline"
+                    size="icon"
+                    className="mr-4 bg-gray-800 text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4" />
+                  </Button>
+                  <div className="overflow-hidden w-1/3">
+                    <div
+                      className="flex transition-transform duration-500 ease-in-out"
+                      style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                    >
+                      {
+
+                        campaigns.map((campaign, i) => {
+                          console.log(campaign);
+
+                          return (
+                            <Card
+                              key={i}
+                              className="flex-shrink-0 w-full bg-gray-800 border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-green-400/20"
+                            >
+                              <img
+                                src={chooseImage(campaign.documents)}
+                                width={400}
+                                height={200}
+                                alt={campaign.title}
+                                className="w-full h-48 object-cover"
+                              />
+                              <CardHeader>
+                                <CardTitle className="text-white">
+                                  {campaign.title}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-gray-300 mb-4">
+                                  End Date: {new Date(campaign.endDate).toLocaleDateString()}
+                                </p>
+                                <Button
+                                  onClick={() => {
+                                    router.push(`/campaign/${campaign.campaignId._hex}`);
+                                  }}
+                                  className="w-full mt-4 bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-md shadow-green-400/30 transition-all duration-300"
+                                >
+                                  Support
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={nextSlide}
+                    variant="outline"
+                    size="icon"
+                    className="ml-4 bg-gray-800 text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900"
+                  >
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+          }
         </section>
 
         {/* Create Campaign Form */}
@@ -281,7 +296,7 @@ export default function Page() {
           </h2>
           <div className="flex items-center">
             <div className="flex-1 text-right pr-4">
-              <label htmlFor="title" className="text-green-400 font-semibold">
+              <label htmlFor="title" className="text-green-400 font-semibold text-lg">
                 Title
               </label>
             </div>
@@ -291,7 +306,7 @@ export default function Page() {
             <div className="flex-1 pl-4">
               <Input
                 id="title"
-                className="bg-gray-700 text-white border-gray-600"
+                className="bg-gray-700 text-white border-gray-600 text-lg"
                 onChange={(evt) => {
                   setNewCampaign((prev) => ({
                     ...prev,
@@ -304,13 +319,13 @@ export default function Page() {
           <div className="border-l-2 border-dashed border-green-400 ml-[50%] pl-4 py-4">
             <label
               htmlFor="description"
-              className="text-green-400 font-semibold block mb-2"
+              className="text-green-400 font-semibold block mb-2 text-lg"
             >
               Description/Story
             </label>
             <Textarea
               id="description"
-              className="bg-gray-700 text-white border-gray-600"
+              className="bg-gray-700 text-white border-gray-600 text-lg"
               rows={4}
               onChange={(evt) => {
                 setNewCampaign((prev) => ({
@@ -322,18 +337,18 @@ export default function Page() {
           </div>
           <div className="flex items-center">
             <div className="flex-1 text-right pr-4">
-              <label htmlFor="endDate" className="text-green-400 font-semibold">
+              <label htmlFor="endDate" className="text-green-400 font-semibold text-lg">
                 End Date
               </label>
             </div>
             <div className="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
-              <CalendarIcon className="w-4 h-4 text-gray-900" />
+              <CalendarIcon className="w-4 h-4 text-gray-900 text-lg" />
             </div>
             <div className="flex-1 pl-4">
               <Input
                 id="endDate"
                 type="date"
-                className="bg-gray-700 text-white border-gray-600"
+                className="bg-gray-700 text-white border-gray-600 text-lg"
                 onChange={(evt) => {
                   setNewCampaign((prev) => ({
                     ...prev,
@@ -346,15 +361,15 @@ export default function Page() {
           <div className="border-l-2 border-dashed border-green-400 ml-[50%] pl-4 py-4">
             <label
               htmlFor="goal"
-              className="text-green-400 font-semibold block mb-2"
+              className="text-green-400 font-semibold block mb-2 text-lg"
             >
-              Goal Amount (ETH)
+              Goal Amount (WEI)
             </label>
             <Input
               id="goal"
               type="number"
               step="1"
-              className="bg-gray-700 text-white border-gray-600"
+              className="bg-gray-700 text-white border-gray-600 text-lg"
               min={10}
               onChange={(evt) => {
                 setNewCampaign((prev) => ({
@@ -366,17 +381,17 @@ export default function Page() {
           </div>
           <div className="flex items-center">
             <div className="flex-1 text-right pr-4">
-              <label className="text-green-400 font-semibold">Images & Documents</label>
+              <label className="text-green-400 font-semibold text-lg">Images & Documents</label>
             </div>
             <div className="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
-              <FileTextIcon className="w-4 h-4 text-gray-900" />
+              <FileTextIcon className="w-4 h-4 text-gray-900 text-lg" />
             </div>
-            <div className="flex-1 pl-4">
+            <div className="flex-1 pl-4 ">
               <Input
                 type="file"
                 multiple
                 accept="image/*"
-                className="bg-gray-700 text-white border-gray-600"
+                className="bg-gray-700 text-white border-gray-600 text-lg pt-1"
                 onChange={(evt) => {
                   setNewFiles(evt.target.files);
                 }}
@@ -387,7 +402,7 @@ export default function Page() {
             {address != "" ? (
               <Button
                 size="lg"
-                className="bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300 mt-10"
+                className="bg-green-400 text-lg hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300 mt-10"
                 onClick={createNewCampaign}
               >
                 <SendIcon className="w-4 h-4 mr-2" />
@@ -396,7 +411,7 @@ export default function Page() {
             ) : (
               <Button
                 size="lg"
-                className="bg-green-400 hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300"
+                className="bg-green-400 text-lg hover:bg-green-300 text-gray-900 font-semibold shadow-lg shadow-green-400/50 transition-all duration-300 mt-10"
                 onClick={connectMask}
               >
                 <WalletIcon className="w-4 h-4 mr-2" />
