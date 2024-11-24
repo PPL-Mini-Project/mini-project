@@ -324,7 +324,7 @@ const CampaignList = () => {
                   {campaigns.map((campaign, index) => (
                     <Card
                       key={campaign.campaignId}
-                      className="bg-gray-800 text-gray-300 overflow-hidden h-48"
+                      className="bg-gray-800 text-gray-300 overflow-hidden"
                     >
                       <CardContent className="p-0 flex">
                         <div className="w-1/4 relative">
